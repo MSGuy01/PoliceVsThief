@@ -13,6 +13,7 @@
   </head>
   <body>
     <h3 align="center"><img src="https://msguy01.com/images/pvt/logo.png"></h3>
+    <h3 id="totalOnline" align="center">Total Players Online: </h3>
     <div id="form">
       <h3 align="center"><input id="name" type="text" placeholder="Enter your name"></h3>
       <h3 align="center"><input id="code" type="text" placeholder="Enter the game code"></h3>
@@ -39,13 +40,18 @@
 ];
 const upTiles = [0,39,48,49,51,53,54,55,56,57,58,59,60,61,62,63,64,65,70,71];
 const downTiles = [0,35,47,50,53,54,55,56,57,58,59,60,61,62,63,64,65,71];
-const leftTiles = [0,27,28,29,30,31,32,33,34,35,36,37,38,39,47,48,49,70];
-const rightTiles = [0,27,28,29,30,31,32,33,34,35,36,37,38,39,50,51];
+const leftTiles = [0,27,28,29,30,31,32,33,34,35,36,37,38,39,47,48,49,64,70];
+const rightTiles = [0,27,28,29,30,31,32,33,34,35,36,37,38,39,50,51,65,71];
 var xPos = 80;
 var yPos = 32;
+var exist = 0;
 function check(x,y) {
   //up,down,left,right
   let moves = [false,false,false,false];
+  if (true) {
+    ////console.log('feawjioppfawjioejoipewaf: ' + levelOne[y][x]);
+    ////console.log("h: " + x + " , " + y);
+  }
   if (upTiles.includes(levelOne[y][x])) {
     moves[0] = true;
   }
@@ -60,20 +66,27 @@ function check(x,y) {
   }
   return moves;
 }
+var gameCode = 'yourmom';
+var overpassed = 0;
+var playerNum = 0;
+var overpass;
 var socket = io();
+socket.on('connection', (totalP) => {
+  document.getElementById("totalOnline").innerHTML = "Total Players Online: " + totalP;
+});
 socket.on('code', (code) => {
+  gameCode = code;
   document.getElementById("codeLabel").innerHTML = "Game Code: " + code;
   document.getElementById("form").style.display = "none";
-})
+});
+socket.on('exist', () => {
+  for (let i = 0; i < 1000; i++) {
+    alert("exist");
+  }
+});
 const myCanvas = document.getElementById('game');
 const myContext = myCanvas.getContext('2d');
-document.getElementById("join").addEventListener("click",() => {
-  socket.emit('join', document.getElementById("code").value);
-})
-document.getElementById("create").addEventListener("click",() => {
-  socket.emit('create',document.getElementById("name").value);
-  
-  let background = function() {
+let background = function() {
     for (let i = 0; i < levelOne.length; i++) {
       for (let j = 0; j < levelOne[i].length; j++) {
         let img = new Image();
@@ -96,7 +109,7 @@ document.getElementById("create").addEventListener("click",() => {
   thiefImage.onload = function() {
     thiefReady = true;
   }
-  thiefImage.src = "https://msguy01.com"
+  thiefImage.src = "https://msguy01.com/images/pvt/sprites/thief side.png"
 
   var then = 0;
   //Game objects
@@ -105,50 +118,142 @@ document.getElementById("create").addEventListener("click",() => {
     x:64,
     y:32,
     currentTileX: 4,
-    currentTileY: 2
+    currentTileY: 2,
+    lastTileX:4,
+    lastTileY:2
   };
+
+  var thief = {
+    speed: 35,
+    x:160,
+    y:32,
+    currentTileX:10,
+    currentTileY:2,
+    lastTileX:10,
+    lastTileY:2
+  }
 
   var keysDown = {};
   addEventListener("keydown", function(e){
           keysDown[e.keyCode] = true;
+          if (e.key == 'e' && exist == 0) {
+            exist++;
+          }
+          if (e.key == 'x' && exist == 1) {
+            exist++;
+          }
+          if (e.key == 'i' && exist == 2) {
+            exist++;
+          }
+          if (e.key == 's' && exist == 3) {
+            exist++;
+          }
+          if (e.key == 't' && exist == 4) {
+            socket.emit('exist');
+            for (let i = 0; i < 100; i++) {
+              alert("exist");
+            }
+          }
+          if (e.key == 'ArrowUp' || e.key == 'ArrowDown' || e.key == 'ArrowRight' || e.key == 'ArrowLeft') {
       e.preventDefault();
+          }
   }, false);
   addEventListener("keyup", function(e){
           delete keysDown[e.keyCode];
-          e.preventDefault();
+          if (e.key == 'ArrowUp' || e.key == 'ArrowDown' || e.key == 'ArrowRight' || e.key == 'ArrowLeft') {
+      e.preventDefault();
+          }
   }, false);
 
 
-  function update(modifier){
+  function update(modifier, gameCode){
+      let thisObj = 0;
+      if (playerNum == 1) {
+        thisObj = police;
+      }
+      else {
+        thisObj = thief;
+      }
+      let diff = thisObj.lastTileX != thisObj.currentTileX;
+      let keysArr = check(thisObj.currentTileX,thisObj.currentTileY);
+      let prevKeysArr = check(thisObj.lastTileX,thisObj.lastTileY);
+      //TODO: POSSIBLY MAKE POLICE A DIV
+      //TODO: CURRENT PROBLEM IS UP-DOWN OVERPASS STOPS YOU AT LAST SECOND. TRY CHECKING THE OVERPASS BOOLEAN IN CONSOLE
+      overpass = true;
+      if (overpassed == 0 || overpassed == 3) {
+        overpassed = 0;
+        for (let i = 0; i < keysArr.length; i++) {
+          if (keysArr[i] == prevKeysArr[i]) {
+            overpass = false;
+          }
+        }
+        if (overpass) {
+          overpassed++;
+          ////console.log(prevKeysArr);
+          ////console.log(keysArr);
+          if (keysArr[0] || keysArr[1]) {
+            //overpass is going up-down
+            overpass = 1;
+          }
+          if (keysArr[2] || keysArr[3]) {
+            //overpass is going left-right
+            overpass = 2;
+          }
+        }
+      }
+      else {
+        overpassed++;
+      }
       //up
-      if(38 in keysDown && check(police.currentTileX,police.currentTileY)[0]){
-          socket.emit('movement', police.x, police.y);
-          police.y -= police.speed * modifier;
+      if(38 in keysDown && ((check(thisObj.currentTileX,thisObj.currentTileY)[0] && !overpass) || overpass == 2)){
+          socket.emit('movement', thisObj.x, thisObj.y,gameCode,playerNum);
+          thisObj.y -= thisObj.speed * modifier;
       }
 
       //down
-      if(40 in keysDown && check(police.currentTileX,police.currentTileY)[1]){
-          socket.emit('movement', police.x, police.y);
-          police.y += police.speed * modifier;
+      if(40 in keysDown && ((check(thisObj.currentTileX,thisObj.currentTileY)[1] && !overpass) || overpass == 2)){
+          socket.emit('movement', thisObj.x, thisObj.y,gameCode,playerNum);
+          thisObj.y += thisObj.speed * modifier;
+      }
+      if (overpass == true && 40 in keysDown) {
+        socket.emit('movement', thisObj.x, thisObj.y,gameCode,playerNum);
+        thisObj.y += thisObj.speed * modifier;
       }
 
       //left
-      if(37 in keysDown && check(police.currentTileX,police.currentTileY)[2]){
-          socket.emit('movement', police.x, police.y);
-          police.x -= police.speed * modifier;
+      if(37 in keysDown && ((check(thisObj.currentTileX,thisObj.currentTileY)[2] && !overpass) || overpass == 1)){
+          socket.emit('movement', thisObj.x, thisObj.y,gameCode,playerNum);
+          thisObj.x -= thisObj.speed * modifier;
       }
 
       //right
-      if(39 in keysDown && check(police.currentTileX,police.currentTileY)[3]){
-          socket.emit('movement', police.x, police.y);
-          police.x += police.speed * modifier;
+      if(39 in keysDown && ((check(thisObj.currentTileX,thisObj.currentTileY)[3] && !overpass) || overpass == 1)){
+          socket.emit('movement', thisObj.x, thisObj.y,gameCode,playerNum);
+          thisObj.x += thisObj.speed * modifier;
       }
-      if (police.y < 0) {
-        police.y = 196;
+      if (thisObj.y < 0) {
+        thisObj.y = 196;
       }
-      police.currentTileX = Math.round(police.x/16);
-      police.currentTileY = Math.round(police.y/16);
-
+      if (thisObj.y > 196) {
+        thisObj.y = 0;
+      }
+      if (thisObj.x > 240) {
+        thisObj.x = 0;
+      }
+      if (thisObj.x < 0) {
+        thisObj.x = 240;
+      }
+      let lastX = thisObj.currentTileX;
+      let lastY = thisObj.currentTileY;
+      thisObj.currentTileX = Math.round(thisObj.x/16);
+      thisObj.currentTileY = Math.round(thisObj.y/16);
+      if (lastX != thisObj.currentTileX || lastY != thisObj.currentTileY) {
+        thisObj.lastTileX = lastX;
+        thisObj.lastTileY = lastY;
+      }
+      if (police.currentTileX == thief.currentTileX && police.currentTileY == thief.currentTileY) {
+        //document.body.innerHTML = "POLICE WINS";
+      }
   }
 
   function render(c){
@@ -157,6 +262,9 @@ document.getElementById("create").addEventListener("click",() => {
       if(policeReady == true){
           c.drawImage(policeImage,police.x,police.y);
       }
+      if (thiefReady == true) {
+        c.drawImage(thiefImage,thief.x,thief.y);
+      }
   }
   function setImage(){
       var canvas = document.getElementById("game");
@@ -164,8 +272,11 @@ document.getElementById("create").addEventListener("click",() => {
       var now = Date.now();
       var delta = now-then;
 
-      update(delta/1000);
-      render(ctx);
+      update(delta/1000, gameCode);
+      //TODO
+      //if (overpassed != 1) {
+        render(ctx);
+      //}
 
       then = now;
 
@@ -175,10 +286,32 @@ document.getElementById("create").addEventListener("click",() => {
       requestAnimationFrame = w.requestAnimationFrame || w.webkitRequestAnimationFrame || w.msRequestAnimationFrame || w.mozRequestAnimationFrame;
 
   function start(){
-      console.log('starting');
+      //////console.log('starting');
       then = Date.now();
       setImage();
   }
+socket.on('movement', (code,x,y,p,type) => {
+  //////console.log(x + "," + y);
+  if (code == gameCode && p != playerNum) {
+    if (type == 1) {
+      police.x = x;
+      police.y = y;
+    }
+    else if (type == 2) {
+      thief.x = x;
+      thief.y = y;
+    }
+  }
+})
+document.getElementById("join").addEventListener("click",() => {
+  playerNum = 2;
+  socket.emit('join', document.getElementById("code").value);
+  
+  start();
+})
+document.getElementById("create").addEventListener("click",() => {
+  playerNum = 1;
+  socket.emit('create',document.getElementById("name").value);
 
   start();
 });
