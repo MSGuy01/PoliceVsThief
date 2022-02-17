@@ -8,7 +8,7 @@ var totalP = 0;
 /*
 {
   gameCode: {
-    players: [bob, joe],
+    players: [[bob, 123456, 100], [joe, 091234, 200],
     online: 1,
     policePos: [],
   }
@@ -30,6 +30,7 @@ server.listen(3000, () => {
   console.log('listening on *:3000');
 });
 io.on('connection', (socket) => {
+  //console.log(socket);
   socket.on('disconnect', (socket) => {
     console.log('a user disconnected');
     totalP--;
@@ -41,21 +42,33 @@ io.on('connection', (socket) => {
     let type = playerNum;
     io.emit('movement',code,x,y,playerNum,type);
   });
-  socket.on('join', (code, name) => {
+  socket.on('join', (code, name, clientID) => {
     let gamesArr = Object.keys(games);
     if (gamesArr.includes(code)) {
-      games[code].players.push(name);
-      games[code].online++;
-      io.emit('code',code);
+      if (games[code].closed) {
+        io.emit('bruh');
+      }
+      else {
+        games[code].players.push([name, clientID,0]);
+        games[code].online++;
+        games[code].closed = true;
+        io.emit('code',code,games[code].players,games[code].online, clientID);
+      }
     }
     else {
-      io.emit('code','Does Not Exist');
+      io.emit('code','Does Not Exist', clientID);
     }
   });
   socket.on('exist', () => {
     io.emit('exist');
   })
-  socket.on('create', (name) => {
+  socket.on('gameOver', (code, winner, clientID) => {
+    console.log(games[code].players[winner-1][2]);
+    games[code].players[winner-1][2]+=100;
+    console.log(games[code].players);
+    io.emit('restartGame', winner, games[code].players[winner-1][2], code);
+  });
+  socket.on('create', (name, clientID) => {
     //TODO:PREVENT DUPLICATE CODES
     let moveOn = false;
     let code;
@@ -72,10 +85,11 @@ io.on('connection', (socket) => {
       }
     }
     games[code] = {
-      'players': [name],
+      'players': [[name,clientID,0]],
       'online': 1,
-      'policePos': [64,32]
+      'policePos': [64,32],
+      'closed': false
     };
-    io.emit('code', code);
+    io.emit('code', code, games[code].players, games[code].online, clientID);
   })
 });
