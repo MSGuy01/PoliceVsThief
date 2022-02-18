@@ -22,6 +22,9 @@
       #timerLabel{
         color: red;
       }
+      #yourPlayer{
+        color: blue;
+      }
     </style>
     <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -44,6 +47,7 @@
     <h3 align="center" id="codeLabel" class="displayOnGame">Game Code: </h3>
     <h3 align="center" id="player1Score" class="displayOnGame">Player 1 Score: 0</h3>
     <h3 align="center" id="player2Score" class="displayOnGame">Player 2 Score: 0</h3>
+    <h3 align="center" id="yourPlayer" class="displayOnGame">Player 1 ()</h3>
     <h3 align="center" id="timerLabel" class="displayOnGame">GAME NOT STARTED</h3>
     <h3 align="center" class="displayOnGame"><canvas id="game"  height="208" width="256"></canvas>
     <div id="playersList" class="displayOnGame">
@@ -103,6 +107,7 @@ GLOBAL VARIABLES
 */
 var exist = 0;
 var timer;
+var playerName;
 var gameCode = 'yourmom';
 var overpassed = 0;
 var policeOrThief = 0;
@@ -161,8 +166,8 @@ then = 0;
     lastTileY:2,
     costume:1
   }
-  socket.emit('movement', thief.x, thief.y,gameCode,2);
-  socket.emit('movement', police.x, police.y,gameCode,1);
+  socket.emit('movement', thief.x, thief.y,gameCode,2,'right');
+  socket.emit('movement', police.x, police.y,gameCode,1,'right');
   keysDown = {};
 }
 
@@ -195,19 +200,27 @@ socket.on('bruh', () => {
   alert("Sorry, that game is full.");
   window.location.reload();
 });
-socket.on('restartGame', (winner,playerArr, code) => {
-  console.log(gameCode);
-  console.log(code);
+socket.on('restartGame', (winner,playerArr, code,name) => {
   if (gameCode == code) {
-    console.log(playerArr);
+    let playerNameLabels = document.getElementsByClassName("playerName");
+    for (let i = 0; i < playerNameLabels.length+1; i++) {
+      playerNameLabels[0].parentNode.removeChild(playerNameLabels[0]);
+    }
+    console.log(name);
+    for (let i = 0; i < name.length; i++) {
+      console.log('*aefawe*')
+      let newEl = document.createElement("h3");
+      newEl.className = "playerName";
+      newEl.id = name[i][1];
+      newEl.innerHTML = name[i][0] + " | " + name[i][3];
+      document.getElementById("playersList").appendChild(newEl);
+    }
     if (winner == 1) {
       document.getElementById("player1Score").innerHTML = "Player 1 Score: " + playerArr;
     }
     else {
       document.getElementById("player2Score").innerHTML = "Player 2 Score: " + playerArr;
     }
-    console.log('****CHANGE POLICE OR THIEF****');
-    console.log(policeOrThief);
     if (policeOrThief == 1) {
       policeOrThief = 2;
     }
@@ -246,13 +259,15 @@ socket.on('code', (code,name,playersOnline, client) => {
     document.getElementById("form").style.display = "none";
     let playerNameLabels = document.getElementsByClassName("playerName");
     for (let i = 0; i < playerNameLabels.length; i++) {
-      playerNameLabels[i].parentNode.removeChild(playerNameLabels[i]);
+      playerNameLabels[0].parentNode.removeChild(playerNameLabels[0]);
     }
     //console.log(name);
     for (let i = 0; i < name.length; i++) {
+      console.log('*aefawe*')
       let newEl = document.createElement("h3");
       newEl.className = "playerName";
-      newEl.innerHTML = name[i][0];
+      newEl.innerHTML = name[i][0] + " | " + name[i][3];
+      newEl.id = name[i][1];
       document.getElementById("playersList").appendChild(newEl);
     }
     if (playersInGame == 2) {
@@ -264,12 +279,14 @@ socket.on('code', (code,name,playersOnline, client) => {
     playersInGame++;
     let playerNameLabels = document.getElementsByClassName("playerName");
     for (let i = 0; i < playerNameLabels.length; i++) {
-      playerNameLabels[i].parentNode.removeChild(playerNameLabels[i]);
+      playerNameLabels[0].parentNode.removeChild(playerNameLabels[0]);
     }
     for (let i = 0; i < name.length; i++) {
+      console.log('*aefawe*')
       let newEl = document.createElement("h3");
       newEl.className = "playerName";
-      newEl.innerHTML = name[i][0];
+      newEl.id = name[i][1];
+      newEl.innerHTML = name[i][0] + " | " + name[i][3];
       document.getElementById("playersList").appendChild(newEl);
     }
   }
@@ -378,7 +395,7 @@ let background = function() {
       }*/
       //TODO: POSSIBLY MAKE POLICE A DIV
       //TODO: CURRENT PROBLEM IS UP-DOWN OVERPASS STOPS YOU AT LAST SECOND. TRY CHECKING THE OVERPASS BOOLEAN IN //console
-      overpass = true;
+      /*overpass = true;
       if (overpassed == 0 || overpassed == 4) {
         overpassed = 0;
         for (let i = 0; i < keysArr.length; i++) {
@@ -402,44 +419,69 @@ let background = function() {
       }
       else {
         overpassed++;
+      }*/
+      const overpassesX = [7,10,12];
+      const overpassesY = [4,4,8];
+      const overpassesTypes = [1,1,2];
+      function checkOverpass(x,y) {
+        for (let i = 0; i < overpassesX.length; i++) {
+          if (overpassesX[i] == x && overpassesY[i] == y) {
+            return i;
+          }
+        }
+        return -1;
       }
       //up
-      if(thisObj.costume != 3 && 38 in keysDown && ((check(thisObj.currentTileX,thisObj.currentTileY)[0] && !overpass) || overpass == 2)){
-          socket.emit('movement', thisObj.x, thisObj.y,gameCode,policeOrThief);
+      if(thisObj.costume != 3 && 38 in keysDown && check(thisObj.currentTileX,thisObj.currentTileY)[0]){
+          socket.emit('movement', thisObj.x, thisObj.y,gameCode,policeOrThief,'up');
           thisObj.y -= thisObj.speed * modifier;
           thisObj.costume = 2;
-          if (thisObj.currentTileX == 12 && thisObj.currentTileY == 10) {
-            //alert("ok");
-            //overpass = false;
-            thisObj.y = 109;
-            thisObj.currentTileY = 7;
+          if (checkOverpass(thisObj.currentTileX,thisObj.currentTileY-1) != -1) {
+            if (overpassesTypes[checkOverpass(thisObj.currentTileX,thisObj.currentTileY-1)] == 2) {
+              thisObj.y-=32;
+              thisObj.currentTileY-=2;
+            }
+          }
+      }
+    
+      //down
+      else if(thisObj.costume != 2 && 40 in keysDown && check(thisObj.currentTileX,thisObj.currentTileY)[1]){
+          socket.emit('movement', thisObj.x, thisObj.y,gameCode,policeOrThief,'down');
+          thisObj.y += thisObj.speed * modifier;
+          thisObj.costume = 3;
+          if (checkOverpass(thisObj.currentTileX,thisObj.currentTileY+1) != -1) {
+            if (overpassesTypes[checkOverpass(thisObj.currentTileX,thisObj.currentTileY+1)] == 2) {
+              thisObj.y+=32;
+              thisObj.currentTileY+=2;
+            }
           }
       }
 
-      //down
-      if(thisObj.costume != 2 && 40 in keysDown && ((check(thisObj.currentTileX,thisObj.currentTileY)[1] && !overpass) || overpass == 2)){
-          socket.emit('movement', thisObj.x, thisObj.y,gameCode,policeOrThief);
-          thisObj.y += thisObj.speed * modifier;
-          thisObj.costume = 3;
-          if (thisObj.currentTileX == 12 && thisObj.currentTileY == 8) {
-        thisObj.y += 16;
-        thisObj.currentTileY++;
-      }
-      }
-
       //left
-      if(thisObj.costume != 1 && 37 in keysDown && ((check(thisObj.currentTileX,thisObj.currentTileY)[2] && !overpass) || overpass == 1)){
-          socket.emit('movement', thisObj.x, thisObj.y,gameCode,policeOrThief);
+      else if(thisObj.costume != 1 && 37 in keysDown && check(thisObj.currentTileX,thisObj.currentTileY)[2]){
+          socket.emit('movement', thisObj.x, thisObj.y,gameCode,policeOrThief,'left');
           thisObj.x -= thisObj.speed * modifier;
           thisObj.costume = 0;
+          if (checkOverpass(thisObj.currentTileX-1,thisObj.currentTileY) != -1) {
+            if (overpassesTypes[checkOverpass(thisObj.currentTileX-1,thisObj.currentTileY)] == 1) {
+              thisObj.x-=32;
+              thisObj.currentTileX-=2;
+            }
+          }
       }
 
       //right
-      if(thisObj.costume != 0 && 39 in keysDown && ((check(thisObj.currentTileX,thisObj.currentTileY)[3] && !overpass) || overpass == 1)){
+      else if(thisObj.costume != 0 && 39 in keysDown && check(thisObj.currentTileX,thisObj.currentTileY)[3]){
         //console.log('move');
-          socket.emit('movement', thisObj.x, thisObj.y,gameCode,policeOrThief);
+          socket.emit('movement', thisObj.x, thisObj.y,gameCode,policeOrThief,'right');
           thisObj.x += thisObj.speed * modifier;
           thisObj.costume = 1;
+          if (checkOverpass(thisObj.currentTileX+1,thisObj.currentTileY) != -1) {
+            if (overpassesTypes[checkOverpass(thisObj.currentTileX+1,thisObj.currentTileY)] == 1) {
+              thisObj.x+=32;
+              thisObj.currentTileX+=2;
+            }
+          }
       }
       if (thisObj.y < 0) {
         thisObj.y = 196;
@@ -460,14 +502,6 @@ let background = function() {
       if (lastX != thisObj.currentTileX || lastY != thisObj.currentTileY) {
         thisObj.lastTileX = lastX;
         thisObj.lastTileY = lastY;
-      }
-      if (police.currentTileX == thief.currentTileX && police.currentTileY == thief.currentTileY) {
-        window.clearInterval(timer);
-        alert("POLICE WINS");
-        reset();
-        //if (policeOrThief == 1) {
-          socket.emit('gameOver', gameCode, playerNum, clientID);
-        //}
       }
     }
   }
@@ -503,6 +537,24 @@ let background = function() {
       //if (overpassed != 1) {
         render(ctx);
       //}
+      if (police.currentTileX == thief.currentTileX && police.currentTileY == thief.currentTileY) {
+        window.clearInterval(timer);
+        alert("POLICE WINS");
+        reset();
+        let otherP = 0;
+        if (playerNum == 1) {
+          otherP = 2;
+        }
+        else{
+          otherP = 1;
+        }
+        if (policeOrThief == 2) {
+          socket.emit('gameOver', gameCode, otherP, clientID);
+        }
+        else {
+          socket.emit('gameOver', gameCode, playerNum, clientID);
+        }
+      }
 
       then = now;
 
@@ -516,14 +568,30 @@ let background = function() {
       setImage();
       let i = 0;
   }
-socket.on('movement', (code,x,y,p,type) => {
+socket.on('movement', (code,x,y,p,type,arrow) => {
   let objToMod;
+  let cos = 0;
+  switch(arrow) {
+    case 'up':
+      cos = 2;
+      break;
+    case 'down':
+      cos = 3;
+      break;
+    case 'left':
+      cos = 0;
+      break;
+    case 'right':
+      cos = 1;
+      break;
+  }
   if (type == 1) {
     objToMod = police;
   }
   else {
     objToMod = thief;
   }
+  objToMod.costume = cos;
   if (code == gameCode && p != policeOrThief) {
     objToMod.x = x;
     objToMod.y = y;
@@ -557,6 +625,8 @@ document.getElementById("submit").addEventListener("click",() => {
       toHide[i].style.display = "none";
     }
     if (created) {
+      playerName = document.getElementById("name").value;
+      document.getElementById("yourPlayer").innerHTML = "Player 1 | " + document.getElementById("name").value;
       //reset();
       policeOrThief = 1;
       playerNum = 1;
@@ -568,6 +638,8 @@ document.getElementById("submit").addEventListener("click",() => {
     }
     else {
       //reset();
+      playerName = document.getElementById("name").value;
+      document.getElementById("yourPlayer").innerHTML = "Player 2 | " + document.getElementById("name").value;
       policeOrThief = 2;
       playerNum = 2;
       socket.emit('join', document.getElementById("code").value, document.getElementById("name").value,clientID);
