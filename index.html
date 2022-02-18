@@ -4,8 +4,9 @@
     <title>Police vs Thief: Violent Chasing</title>
     <style>
       html{
-        background-color: grey;
+        background-color: black;
         font-family: "Roboto";
+        color: white;
       }
       canvas{
         background-color: white;
@@ -35,18 +36,19 @@
     <h3 id="totalOnline" align="center">Total Players Online: </h3>
     <div id="form">
       <div id="stepOne">
-        <h3 align="center"><button id="joinFirst">Join a Game</button></h3>
-        <h3 align="center"><button id="createFirst">Create a Game</button></h3>
+        <!--<h3 align="center"><button id="joinFirst">Join a Game</button></h3>
+        <h3 align="center"><button id="createFirst">Create a Game</button></h3>-->
+      <h3 align="center"><img height="10%" width="10%"id="joinFirst" src="https://msguy01.com/images/pvt/join-game.png" hei></h3>
+        <h3 align="center"><img height="15%" width="15%" id="createFirst" src="https://msguy01.com/images/pvt/create-game.png"></h3>
       </div>
       <div id="stepTwo">
+        <h3 align="center" class="buttonsOnCreate buttonsOnJoin hideOnGame"><button id="back">Back</button></h3>
         <h3 align="center" class="buttonsOnCreate hideOnGame  buttonsOnJoin"><input id="name" type="text" placeholder="Enter your name"></h3>
         <h3 align="center" class="buttonsOnJoin"><input id="code" type="text" placeholder="Enter the game code"></h3>
         <h3 align="center" class="buttonsOnCreate hideOnGame  buttonsOnJoin"><button id="submit">Submit</button></h3>
       </div>
     </div>
     <h3 align="center" id="codeLabel" class="displayOnGame">Game Code: </h3>
-    <h3 align="center" id="player1Score" class="displayOnGame">Player 1 Score: 0</h3>
-    <h3 align="center" id="player2Score" class="displayOnGame">Player 2 Score: 0</h3>
     <h3 align="center" id="yourPlayer" class="displayOnGame">Player 1 ()</h3>
     <h3 align="center" id="timerLabel" class="displayOnGame">GAME NOT STARTED</h3>
     <h3 align="center" class="displayOnGame"><canvas id="game"  height="208" width="256"></canvas>
@@ -56,6 +58,10 @@
     </h3>
     <script src="/socket.io/socket.io.js"></script>
     <script>
+      document.getElementById("back").addEventListener("click", () => {
+        window.location.reload();
+      })
+
       var clientID;
       clientID = Math.floor(Math.random() * 9);
       for (let i = 0; i < 5; i++) {
@@ -212,14 +218,9 @@ socket.on('restartGame', (winner,playerArr, code,name) => {
       let newEl = document.createElement("h3");
       newEl.className = "playerName";
       newEl.id = name[i][1];
-      newEl.innerHTML = name[i][0] + " | " + name[i][3];
+      newEl.innerHTML = name[i][0] + " | " + name[i][3] + " | Score: " + name[i][2];
+      
       document.getElementById("playersList").appendChild(newEl);
-    }
-    if (winner == 1) {
-      document.getElementById("player1Score").innerHTML = "Player 1 Score: " + playerArr;
-    }
-    else {
-      document.getElementById("player2Score").innerHTML = "Player 2 Score: " + playerArr;
     }
     if (policeOrThief == 1) {
       policeOrThief = 2;
@@ -266,7 +267,7 @@ socket.on('code', (code,name,playersOnline, client) => {
       console.log('*aefawe*')
       let newEl = document.createElement("h3");
       newEl.className = "playerName";
-      newEl.innerHTML = name[i][0] + " | " + name[i][3];
+      newEl.innerHTML = name[i][0] + " | " + name[i][3] + " | Score: 0";
       newEl.id = name[i][1];
       document.getElementById("playersList").appendChild(newEl);
     }
@@ -286,7 +287,7 @@ socket.on('code', (code,name,playersOnline, client) => {
       let newEl = document.createElement("h3");
       newEl.className = "playerName";
       newEl.id = name[i][1];
-      newEl.innerHTML = name[i][0] + " | " + name[i][3];
+      newEl.innerHTML = name[i][0] + " | " + name[i][3] + " | Score: 0";
       document.getElementById("playersList").appendChild(newEl);
     }
   }
