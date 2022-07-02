@@ -32,14 +32,14 @@
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300&display=swap" rel="stylesheet">
   </head>
   <body>
-    <h3 align="center"><img src="https://msguy01.com/images/pvt/logo.png" height="300" width="600" class="hideOnGame"></h3>
+    <h3 align="center"><img src="https://matthewrbevins.com/images/pvt/logo.png" height="300" width="600" class="hideOnGame"></h3>
     <h3 id="totalOnline" align="center">Total Players Online: </h3>
     <div id="form">
       <div id="stepOne">
         <!--<h3 align="center"><button id="joinFirst">Join a Game</button></h3>
         <h3 align="center"><button id="createFirst">Create a Game</button></h3>-->
-      <h3 align="center"><img height="10%" width="10%"id="joinFirst" src="https://msguy01.com/images/pvt/join-game.png" hei></h3>
-        <h3 align="center"><img height="15%" width="15%" id="createFirst" src="https://msguy01.com/images/pvt/create-game.png"></h3>
+      <h3 align="center"><img height="10%" width="10%"id="joinFirst" src="https://matthewrbevins.com/images/pvt/join-game.png" hei></h3>
+        <h3 align="center"><img height="15%" width="15%" id="createFirst" src="https://matthewrbevins.com/images/pvt/create-game.png"></h3>
       </div>
       <div id="stepTwo">
         <h3 align="center" class="buttonsOnCreate buttonsOnJoin hideOnGame"><button id="back">Back</button></h3>
@@ -307,7 +307,7 @@ const myCanvas = document.getElementById('game');
 const myContext = myCanvas.getContext('2d');
 let background = function() {
     let img = new Image();
-    img.src = 'https://msguy01.com/images/pvt/map full.png';
+    img.src = 'https://matthewrbevins.com/images/pvt/map full.png';
     img.onload = () => {
       myContext.drawImage(img,0,0,256,240);
     }
@@ -317,26 +317,26 @@ let background = function() {
   policeImage.onload = function(){
       policeReady = true;
   }
-  policeImage.src="https://msguy01.com/images/pvt/sprites/police side.png";
+  policeImage.src="https://matthewrbevins.com/images/pvt/sprites/police side.png";
   var police2Ready = false; 
   var police2Image = new Image();
   police2Image.onload = function(){
       police2Ready = true;
   }
-  police2Image.src="https://msguy01.com/images/pvt/sprites/police up.png";
+  police2Image.src="https://matthewrbevins.com/images/pvt/sprites/police up.png";
 
   var thiefReady = false;
   var thiefImage = new Image();
   thiefImage.onload = function() {
     thiefReady = true;
   }
-  thiefImage.src = "https://msguy01.com/images/pvt/sprites/thief side.png"
+  thiefImage.src = "https://matthewrbevins.com/images/pvt/sprites/thief side.png"
   var thief2Ready = false;
   var thief2Image = new Image();
   thief2Image.onload = function() {
     thief2Ready = true;
   }
-  thief2Image.src = "https://msguy01.com/images/pvt/sprites/thief up.png"
+  thief2Image.src = "https://matthewrbevins.com/images/pvt/sprites/thief up.png"
   addEventListener("keydown", function(e){
           keysDown[e.keyCode] = true;
           if (e.key == 'e' && exist == 0) {
